@@ -126,9 +126,10 @@ INSTALLED_APPS = (
     'south', # database migration
     'tastypie', # rest api
     'diabolo',
+) + (
     'debug_toolbar', # debug
     'devserver', # debug
-)
+) if DEBUG else ()
 
 #####
 ### DEBUG TOOL BAR
@@ -174,3 +175,9 @@ LOGGING = {
         },
     }
 }
+
+
+try:
+	from local_settings import *
+except ImportError:
+	pass

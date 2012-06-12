@@ -7,20 +7,15 @@ from django.db.models.signals import post_save
 class UserProfile(models.Model):
 	user = models.OneToOneField(User)
 	badge_id = models.CharField(max_length=50)
+	pass_seller = models.CharField(max_length=50)
 
+	def __unicode__(self):
+		return "Profile : "+self.user.username
 
 
 def create_user_profile(sender, instance, created, **kwargs):
 	if created:
-		m = hashlib.sha1()
-		m.update(str(random.random()))
-		m.update(instance.username)
-		activation_key = m.hexdigest()
-		key_expires = timezone.now() + timezone.timedelta(2)
-		UserProfile.objects.create(user=instance,
-							key_expires=key_expires,
-							activation_key=activation_key,
-		)
+		UserProfile.objects.create(user=instance)
 
 post_save.connect(create_user_profile, sender=User)
 
@@ -53,7 +48,7 @@ class Article(models.Model):
 class PointOfSale(models.Model):
 	name = models.CharField(max_length=50)
 	key = models.CharField(max_length=50,null=True)
-	MustCheckSeller = models.BooleanField()
+	check_seller_pass = models.BooleanField()
 
 	def __unicode__(self):
 		return self.name

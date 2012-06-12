@@ -7,7 +7,12 @@ from django.db.models.signals import post_save
 class UserProfile(models.Model):
 	user = models.OneToOneField(User)
 	badge_id = models.CharField(max_length=50)
-	pass_seller = models.CharField(max_length=50)
+	pass_seller = models.CharField(max_length=50) # A virer selon matthieu
+	birthday = models.DateField()
+	bloque = models.BooleanField(default=False)
+	solde = models.IntegerField()
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
 
 	def __unicode__(self):
 		return "Profile : "+self.user.username
@@ -19,10 +24,16 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 post_save.connect(create_user_profile, sender=User)
 
+class Groupe(models.Model):
+	name = models.CharField(max_length=50)
+	
+	def __unicode__(self):
+		return self.name
 
 class Famille(models.Model):
 	name = models.CharField(max_length=50)
 	alcool = models.BooleanField()
+	groupe = models.ForeignKey(Groupe, related_name="Groupe")
 	
 	def __unicode__(self):
 		return self.name
@@ -61,12 +72,6 @@ class ArticlePos(models.Model):
 	pos = models.ForeignKey(PointOfSale, related_name="pointdevente")
 	debut = models.TimeField()
 	fin = models.TimeField()
-
-class Groupe(models.Model):
-	name = models.CharField(max_length=50)
-	
-	def __unicode__(self):
-		return self.name
 
 class Reversement(models.Model):
 	date = models.DateTimeField()

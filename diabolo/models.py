@@ -19,13 +19,16 @@ class Article(models.Model):
 	name = models.CharField(max_length=50)
 	famille = models.ForeignKey(Famille, related_name="Famille")
 	asso = models.ForeignKey(Asso, related_name="Association")
+	stockinitial = models.IntegerField(null=True)
+	stock = models.IntegerField(null=True)
+	enVente = models.BooleanField()
 
 	def __unicode__(self):
 		return self.name
 		
 class PointOfSale(models.Model):
 	name = models.CharField(max_length=50)
-	key = models.CharField(max_length=50)
+	key = models.CharField(max_length=50,null=True)
 	MustCheckSeller = models.BooleanField()
 
 	def __unicode__(self):

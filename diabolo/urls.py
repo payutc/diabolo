@@ -5,13 +5,13 @@ from django.contrib import admin
 admin.autodiscover()
 
 from tastypie.api import Api
-from diabolo.api import *
-
 v1_api = Api(api_name='v1')
-v1_api.register(UserResource())
-v1_api.register(ArticleResource())
-v1_api.register(POSResource())
-v1_api.register(TransactionResource())
+import diabolo.api
+import inspect
+
+for name,obj in inspect.getmembers(diabolo.api):
+	if 'Resource' in name and 'ModelResource' != name and inspect.isclass(obj):
+		v1_api.register(obj())
 
 urlpatterns = patterns('',
 	# Examples:

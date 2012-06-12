@@ -22,6 +22,14 @@ class PointOfSale(models.Model):
 	def __unicode__(self):
 		return self.name
 
+class Reversement(models.Model):
+	date = models.DateTimeField()
+	montant = models.IntegerField()
+	ref = models.CharField(max_length=255)
+	
+	def __unicode__(self):
+		return self.name
+	
 class Transaction(models.Model):
 	article = models.ForeignKey(Article)
 	seller = models.ForeignKey(User, related_name="seller")

@@ -22,6 +22,8 @@ class Article(models.Model):
 	stockinitial = models.IntegerField(null=True)
 	stock = models.IntegerField(null=True)
 	enVente = models.BooleanField()
+	tva = models.DecimalField(default=0.0, max_digits=3, decimal_places=2)
+	priceTTC = models.IntegerField()
 
 	def __unicode__(self):
 		return self.name
@@ -35,9 +37,9 @@ class PointOfSale(models.Model):
 		return self.name
 		
 class ArticlePos(models.Model):
-	article = models.ForeignKey(Article, related_name="Article")
+	article = models.ForeignKey(Article, related_name="article")
 	position = models.IntegerField()
-	pos = models.ForeignKey(PointOfSale, related_name="Point de vente")
+	pos = models.ForeignKey(PointOfSale, related_name="pointdevente")
 	debut = models.TimeField()
 	fin = models.TimeField()
 
@@ -56,18 +58,30 @@ class Reversement(models.Model):
 		return self.name
 	
 class Transaction(models.Model):
-	article = models.ForeignKey(Article)
-	seller = models.ForeignKey(User, related_name="seller")
-	buyer = models.ForeignKey(User, related_name="buyer")
+	article = models.ForeignKey(Article, null=True)
+	userFrom = models.ForeignKey(User, related_name="userFrom")
+	seller = models.ForeignKey(User, null=True, related_name="seller")
+	assoTo = models.ForeignKey(Asso, null=True, related_name="assoTo")
+	userTo = models.ForeignKey(User, null=True, related_name="userTo")
 	pos = models.ForeignKey(PointOfSale, related_name="pos")
 	date = models.DateTimeField()
+	nb = models.IntegerField(default=1)
+	tarifsTTC = models.IntegerField()
+	TVA = models.DecimalField(max_digits=3, decimal_places=2)
+	MODE_CHOICES = (
+		('DEB', 'Debit'),
+		('CRE', 'Credit')
+	)
+	reverse = models.ForeignKey(Reversement, null=True, related_name="Transactionreverse")
+	mode = models.CharField(max_length=3, choices=MODE_CHOICES)
 
 	def __unicode__(self):
-		return "Transaction(article=%s,seller=%s,buyer=%s,pos=%s,date=%s)" % (
+		return "Transaction(article=%s,seller=%s,buyer=%s,pos=%s,date=%s,tarifs=%s)" % (
 			self.article,
 			self.seller,
 			self.buyer,
 			self.pos,
-			self.date
+			self.date,
+			self.tarifs
 		)
 

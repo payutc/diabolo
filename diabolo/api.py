@@ -16,10 +16,10 @@ class UserResource(ModelResource):
 		#authentication = BasicAuthentication()
 		#authorization = DjangoAuthorization()
 
-class ProduitResource(ModelResource):
+class ArticleResource(ModelResource):
 	class Meta:
-		queryset = Produit.objects.all()
-		resource_name = 'produit'
+		queryset = Article.objects.all()
+		resource_name = 'article'
 
 class POSResource(ModelResource):
 	class Meta:
@@ -29,7 +29,7 @@ class POSResource(ModelResource):
 class TransactionResource(ModelResource):
 	buyer = fields.ForeignKey(UserResource, 'buyer')
 	seller = fields.ForeignKey(UserResource, 'seller')
-	produit = fields.ForeignKey(ProduitResource, 'produit')
+	article = fields.ForeignKey(ArticleResource, 'article')
 	pos = fields.ForeignKey(POSResource, 'pos')
 	
 	class Meta:

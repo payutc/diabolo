@@ -9,7 +9,7 @@ from diabolo.api import *
 
 v1_api = Api(api_name='v1')
 v1_api.register(UserResource())
-v1_api.register(ProduitResource())
+v1_api.register(ArticleResource())
 v1_api.register(POSResource())
 v1_api.register(TransactionResource())
 

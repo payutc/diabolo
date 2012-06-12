@@ -1,6 +1,6 @@
 http://elweb.co/programacion/33-projects-that-make-developing-django-apps-aweso
 
-    pip install virtualenv
+    sudo pip install virtualenv
     virtualenv env_django
     export PYTHON_PATH=
     source env_django/bin/activate

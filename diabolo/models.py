@@ -25,7 +25,8 @@ class Article(models.Model):
 		
 class PointOfSale(models.Model):
 	name = models.CharField(max_length=50)
-	auth_assos = models.ManyToManyField(Asso, verbose_name="list of authorized assos")
+	key = models.CharField(max_length=50)
+	MustCheckSeller = models.BooleanField()
 
 	def __unicode__(self):
 		return self.name

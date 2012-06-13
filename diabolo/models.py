@@ -8,9 +8,9 @@ class UserProfile(models.Model):
 	user = models.OneToOneField(User)
 	badge_id = models.CharField(max_length=50)
 	pass_seller = models.CharField(max_length=50) # A virer selon matthieu
-	birthday = models.DateField()
+	birthday = models.DateField(null=True)
 	bloque = models.BooleanField(default=False)
-	solde = models.IntegerField()
+	solde = models.IntegerField(default=0)
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 

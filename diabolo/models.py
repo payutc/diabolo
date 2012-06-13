@@ -78,21 +78,15 @@ class Reversement(models.Model):
 	
 class Transaction(models.Model):
 	article = models.ForeignKey(Article, null=True)
-	userFrom = models.ForeignKey(User, related_name="userFrom")
+	user = models.ForeignKey(User, related_name="user")
 	seller = models.ForeignKey(User, null=True, related_name="seller")
-	assoTo = models.ForeignKey(Asso, null=True, related_name="assoTo")
-	userTo = models.ForeignKey(User, null=True, related_name="userTo")
+	asso = models.ForeignKey(Asso, null=True, related_name="asso")
 	pos = models.ForeignKey(PointOfSale, related_name="pos")
-	date = models.DateTimeField()
+	date = models.DateTimeField(auto_now_add=True)
 	nb = models.IntegerField(default=1)
-	tarifsTTC = models.IntegerField()
-	TVA = models.DecimalField(max_digits=3, decimal_places=2)
-	MODE_CHOICES = (
-		('DEB', 'Debit'),
-		('CRE', 'Credit')
-	)
+	prix_ttc = models.IntegerField()
+	tva = models.DecimalField(max_digits=3, decimal_places=2)
 	reverse = models.ForeignKey(Reversement, null=True, related_name="Transactionreverse")
-	mode = models.CharField(max_length=3, choices=MODE_CHOICES)
 
 	def __unicode__(self):
 		return "Transaction(article=%s,seller=%s,buyer=%s,pos=%s,date=%s,tarifs=%s)" % (

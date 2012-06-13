@@ -123,7 +123,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'south', # database migration
+    #'south', # database migration
     'tastypie', # rest api
     'diabolo',
 ) + (

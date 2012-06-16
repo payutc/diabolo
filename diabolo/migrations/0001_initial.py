@@ -8,13 +8,21 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'Article'
-        db.create_table('diabolo_article', (
+        # Adding model 'UserProfile'
+        db.create_table('diabolo_userprofile', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
+            ('badge_id', self.gf('django.db.models.fields.CharField')(max_length=50, null=True)),
+        ))
+        db.send_create_signal('diabolo', ['UserProfile'])
+
+        # Adding model 'Famille'
+        db.create_table('diabolo_famille', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
-            ('price', self.gf('django.db.models.fields.IntegerField')()),
+            ('alcool', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal('diabolo', ['Article'])
+        db.send_create_signal('diabolo', ['Famille'])
 
         # Adding model 'Asso'
         db.create_table('diabolo_asso', (
@@ -31,20 +39,53 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('diabolo_asso_sellers', ['asso_id', 'user_id'])
 
+        # Adding model 'Article'
+        db.create_table('diabolo_article', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('famille', self.gf('django.db.models.fields.related.ForeignKey')(related_name='Famille', to=orm['diabolo.Famille'])),
+            ('asso', self.gf('django.db.models.fields.related.ForeignKey')(related_name='Association', to=orm['diabolo.Asso'])),
+            ('stockinitial', self.gf('django.db.models.fields.IntegerField')(null=True)),
+            ('stock', self.gf('django.db.models.fields.IntegerField')(null=True)),
+            ('enVente', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal('diabolo', ['Article'])
+
         # Adding model 'PointOfSale'
         db.create_table('diabolo_pointofsale', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('key', self.gf('django.db.models.fields.CharField')(max_length=50, null=True)),
+            ('MustCheckSeller', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal('diabolo', ['PointOfSale'])
 
-        # Adding M2M table for field auth_assos on 'PointOfSale'
-        db.create_table('diabolo_pointofsale_auth_assos', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('pointofsale', models.ForeignKey(orm['diabolo.pointofsale'], null=False)),
-            ('asso', models.ForeignKey(orm['diabolo.asso'], null=False))
+        # Adding model 'ArticlePos'
+        db.create_table('diabolo_articlepos', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('article', self.gf('django.db.models.fields.related.ForeignKey')(related_name='Article', to=orm['diabolo.Article'])),
+            ('position', self.gf('django.db.models.fields.IntegerField')()),
+            ('pos', self.gf('django.db.models.fields.related.ForeignKey')(related_name='Point de vente', to=orm['diabolo.PointOfSale'])),
+            ('debut', self.gf('django.db.models.fields.TimeField')()),
+            ('fin', self.gf('django.db.models.fields.TimeField')()),
         ))
-        db.create_unique('diabolo_pointofsale_auth_assos', ['pointofsale_id', 'asso_id'])
+        db.send_create_signal('diabolo', ['ArticlePos'])
+
+        # Adding model 'Groupe'
+        db.create_table('diabolo_groupe', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+        ))
+        db.send_create_signal('diabolo', ['Groupe'])
+
+        # Adding model 'Reversement'
+        db.create_table('diabolo_reversement', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('date', self.gf('django.db.models.fields.DateTimeField')()),
+            ('montant', self.gf('django.db.models.fields.IntegerField')()),
+            ('ref', self.gf('django.db.models.fields.CharField')(max_length=255)),
+        ))
+        db.send_create_signal('diabolo', ['Reversement'])
 
         # Adding model 'Transaction'
         db.create_table('diabolo_transaction', (
@@ -59,8 +100,11 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        # Deleting model 'Article'
-        db.delete_table('diabolo_article')
+        # Deleting model 'UserProfile'
+        db.delete_table('diabolo_userprofile')
+
+        # Deleting model 'Famille'
+        db.delete_table('diabolo_famille')
 
         # Deleting model 'Asso'
         db.delete_table('diabolo_asso')
@@ -68,11 +112,20 @@ class Migration(SchemaMigration):
         # Removing M2M table for field sellers on 'Asso'
         db.delete_table('diabolo_asso_sellers')
 
+        # Deleting model 'Article'
+        db.delete_table('diabolo_article')
+
         # Deleting model 'PointOfSale'
         db.delete_table('diabolo_pointofsale')
 
-        # Removing M2M table for field auth_assos on 'PointOfSale'
-        db.delete_table('diabolo_pointofsale_auth_assos')
+        # Deleting model 'ArticlePos'
+        db.delete_table('diabolo_articlepos')
+
+        # Deleting model 'Groupe'
+        db.delete_table('diabolo_groupe')
+
+        # Deleting model 'Reversement'
+        db.delete_table('diabolo_reversement')
 
         # Deleting model 'Transaction'
         db.delete_table('diabolo_transaction')
@@ -117,9 +170,22 @@ class Migration(SchemaMigration):
         },
         'diabolo.article': {
             'Meta': {'object_name': 'Article'},
+            'asso': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'Association'", 'to': "orm['diabolo.Asso']"}),
+            'enVente': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'famille': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'Famille'", 'to': "orm['diabolo.Famille']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'price': ('django.db.models.fields.IntegerField', [], {})
+            'stock': ('django.db.models.fields.IntegerField', [], {'null': 'True'}),
+            'stockinitial': ('django.db.models.fields.IntegerField', [], {'null': 'True'})
+        },
+        'diabolo.articlepos': {
+            'Meta': {'object_name': 'ArticlePos'},
+            'article': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'Article'", 'to': "orm['diabolo.Article']"}),
+            'debut': ('django.db.models.fields.TimeField', [], {}),
+            'fin': ('django.db.models.fields.TimeField', [], {}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'pos': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'Point de vente'", 'to': "orm['diabolo.PointOfSale']"}),
+            'position': ('django.db.models.fields.IntegerField', [], {})
         },
         'diabolo.asso': {
             'Meta': {'object_name': 'Asso'},
@@ -127,11 +193,30 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
             'sellers': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.User']", 'symmetrical': 'False'})
         },
-        'diabolo.pointofsale': {
-            'Meta': {'object_name': 'PointOfSale'},
-            'auth_assos': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['diabolo.Asso']", 'symmetrical': 'False'}),
+        'diabolo.famille': {
+            'Meta': {'object_name': 'Famille'},
+            'alcool': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+        },
+        'diabolo.groupe': {
+            'Meta': {'object_name': 'Groupe'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+        },
+        'diabolo.pointofsale': {
+            'Meta': {'object_name': 'PointOfSale'},
+            'MustCheckSeller': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+        },
+        'diabolo.reversement': {
+            'Meta': {'object_name': 'Reversement'},
+            'date': ('django.db.models.fields.DateTimeField', [], {}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'montant': ('django.db.models.fields.IntegerField', [], {}),
+            'ref': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         'diabolo.transaction': {
             'Meta': {'object_name': 'Transaction'},
@@ -141,6 +226,12 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'pos': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'pos'", 'to': "orm['diabolo.PointOfSale']"}),
             'seller': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'seller'", 'to': "orm['auth.User']"})
+        },
+        'diabolo.userprofile': {
+            'Meta': {'object_name': 'UserProfile'},
+            'badge_id': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'})
         }
     }
 

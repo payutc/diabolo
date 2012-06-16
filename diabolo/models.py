@@ -7,7 +7,12 @@ from django.db.models.signals import post_save
 class UserProfile(models.Model):
 	user = models.OneToOneField(User)
 	badge_id = models.CharField(max_length=50)
-	pass_seller = models.CharField(max_length=50)
+	pass_seller = models.CharField(max_length=50) # A virer selon matthieu
+	birthday = models.DateField(null=True)
+	bloque = models.BooleanField(default=False)
+	solde = models.IntegerField(default=0)
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
 
 	def __unicode__(self):
 		return "Profile : "+self.user.username
@@ -19,10 +24,16 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 post_save.connect(create_user_profile, sender=User)
 
+class Groupe(models.Model):
+	name = models.CharField(max_length=50)
+	
+	def __unicode__(self):
+		return self.name
 
 class Famille(models.Model):
 	name = models.CharField(max_length=50)
 	alcool = models.BooleanField()
+	groupe = models.ForeignKey(Groupe, related_name="Groupe")
 	
 	def __unicode__(self):
 		return self.name
@@ -62,12 +73,6 @@ class ArticlePos(models.Model):
 	debut = models.TimeField()
 	fin = models.TimeField()
 
-class Groupe(models.Model):
-	name = models.CharField(max_length=50)
-	
-	def __unicode__(self):
-		return self.name
-
 class Reversement(models.Model):
 	date = models.DateTimeField()
 	montant = models.IntegerField()
@@ -78,21 +83,15 @@ class Reversement(models.Model):
 	
 class Transaction(models.Model):
 	article = models.ForeignKey(Article, null=True)
-	userFrom = models.ForeignKey(User, related_name="userFrom")
+	user = models.ForeignKey(User, related_name="user")
 	seller = models.ForeignKey(User, null=True, related_name="seller")
-	assoTo = models.ForeignKey(Asso, null=True, related_name="assoTo")
-	userTo = models.ForeignKey(User, null=True, related_name="userTo")
+	asso = models.ForeignKey(Asso, null=True, related_name="asso")
 	pos = models.ForeignKey(PointOfSale, related_name="pos")
-	date = models.DateTimeField()
+	date = models.DateTimeField(auto_now_add=True)
 	nb = models.IntegerField(default=1)
-	tarifsTTC = models.IntegerField()
-	TVA = models.DecimalField(max_digits=3, decimal_places=2)
-	MODE_CHOICES = (
-		('DEB', 'Debit'),
-		('CRE', 'Credit')
-	)
+	prix_ttc = models.IntegerField()
+	tva = models.DecimalField(max_digits=3, decimal_places=2)
 	reverse = models.ForeignKey(Reversement, null=True, related_name="Transactionreverse")
-	mode = models.CharField(max_length=3, choices=MODE_CHOICES)
 
 	def __unicode__(self):
 		return "Transaction(article=%s,seller=%s,buyer=%s,pos=%s,date=%s,tarifs=%s)" % (

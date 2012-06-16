@@ -65,7 +65,7 @@ class SillyAuthentication(Authentication):
 
 		This implementation returns the user's username.
 		"""
-		badge_id, pos_id, pos_key = self.extract_credentials(request)
+		badge_id, password, pos_id, pos_key = self.extract_credentials(request)
 		return badge_id or 'nouser'
 
 

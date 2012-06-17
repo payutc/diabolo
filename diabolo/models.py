@@ -91,7 +91,7 @@ class Transaction(models.Model):
 		('V', 'Virement')
 	)
 	t = models.CharField(max_length=1, choices=TCHOICE)
-	desc = models.CharField(max_length=255)
+	description = models.CharField(max_length=255)
 
 	def __unicode__(self):
 		return "Transaction(type=%s,montant=%s,date=%s,user=%s)" % (
@@ -108,10 +108,22 @@ class Achat(models.Model):
 	asso = models.ForeignKey(Asso, related_name="asso")
 	pos = models.ForeignKey(PointOfSale, related_name="pos")
 	date = models.DateTimeField(auto_now_add=True)
-	prix_ttc = models.IntegerField()
 	tva = models.DecimalField(max_digits=3, decimal_places=2)
 	transaction = models.ForeignKey(Transaction, null=True)
 
+	def save(self, *args, **kwargs):
+		amount = kwargs.get('amount', None)
+		description = kwargs.get('description', None)
+	
+		if not amount or not description:
+			raise Exception("need amount and description")
+		self.full_clean(exclude=['transaction'])
+		del kwargs['amount']
+		del kwargs['description']
+		transaction = Transaction.objects.create(t='A', user=self.buyer, amount=amount, description=description)
+		self.transaction = transaction
+		super(Achat, self).save(*args, **kwargs)
+	
 	def __unicode__(self):
 		return "Achat(article=%s,seller=%s,buyer=%s,pos=%s,date=%s,tarifs=%s)" % (
 			self.article,
@@ -121,6 +133,7 @@ class Achat(models.Model):
 			self.date,
 			self.prix_ttc
 		)
+
 		
 class Paybox(models.Model):
 	loader = models.ForeignKey(User, related_name="loader")

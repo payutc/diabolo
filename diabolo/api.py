@@ -11,7 +11,6 @@ from django.contrib.auth import authenticate,login,logout
 from diabolo.models import *
 from django.conf import settings
 
-from django.utils import timezone
 
 class SillyAuthentication(Authentication):
 	def _unauthorized(self):
@@ -40,7 +39,6 @@ class SillyAuthentication(Authentication):
 		Should return either ``True`` if allowed, ``False`` if not or an
 		``HttpResponse`` if you need something custom.
 		"""
-		print timezone.now()
 		if hasattr(request, 'user') and request.user.is_authenticated():
 			return True
 
@@ -80,8 +78,7 @@ class SillyAuthentication(Authentication):
 
 		This implementation returns the user's username.
 		"""
-		badge_id, password, pos_id, pos_key = self.extract_credentials(request)
-		return badge_id or 'nouser'
+		return request.user.username
 
 
 class SillyAuthorization(Authorization):

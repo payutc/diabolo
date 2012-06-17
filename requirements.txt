@@ -1,7 +1,7 @@
 Django
 South
 django-guardian
-django-tastypie
+pip install git+git://github.com/toastdriven/django-tastypie#egg=django-tastypie
 MySQL-python
 pyyaml
 django-debug-toolbar

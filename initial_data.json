@@ -1,0 +1,266 @@
+[
+    {
+        "pk": 1,
+        "model": "diabolo.userprofile",
+        "fields": {
+            "updated": "2012-06-17T08:23:36Z",
+            "created": "2012-06-16T20:31:19Z",
+            "solde": 2000,
+            "pass_seller": "1234",
+            "birthday": "2012-06-17",
+            "badge_id": "1234",
+            "user": 1,
+            "bloque": false
+        }
+    },
+    {
+        "pk": 2,
+        "model": "diabolo.userprofile",
+        "fields": {
+            "updated": "2012-06-16T20:31:19Z",
+            "created": "2012-06-16T20:31:19Z",
+            "solde": 0,
+            "pass_seller": "",
+            "birthday": null,
+            "badge_id": "",
+            "user": -1,
+            "bloque": false
+        }
+    },
+    {
+        "pk": 3,
+        "model": "diabolo.userprofile",
+        "fields": {
+            "updated": "2012-06-17T08:23:57Z",
+            "created": "2012-06-17T08:22:08Z",
+            "solde": 2000,
+            "pass_seller": "1234",
+            "birthday": "2012-06-17",
+            "badge_id": "1234",
+            "user": 2,
+            "bloque": false
+        }
+    },
+    {
+        "pk": 4,
+        "model": "diabolo.userprofile",
+        "fields": {
+            "updated": "2012-06-17T08:24:09Z",
+            "created": "2012-06-17T08:22:20Z",
+            "solde": 2000,
+            "pass_seller": "1234",
+            "birthday": "2012-06-17",
+            "badge_id": "1234",
+            "user": 3,
+            "bloque": false
+        }
+    },
+    {
+        "pk": 5,
+        "model": "diabolo.userprofile",
+        "fields": {
+            "updated": "2012-06-17T08:24:22Z",
+            "created": "2012-06-17T08:22:30Z",
+            "solde": 2000,
+            "pass_seller": "1234",
+            "birthday": "2012-06-17",
+            "badge_id": "1234",
+            "user": 4,
+            "bloque": false
+        }
+    },
+    {
+        "pk": -1,
+        "model": "auth.user",
+        "fields": {
+            "username": "AnonymousUser",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-06-17T08:48:15Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "",
+            "email": "",
+            "date_joined": "2012-06-17T08:48:15Z"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "auth.user",
+        "fields": {
+            "username": "root",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": true,
+            "is_staff": true,
+            "last_login": "2012-06-17T08:48:15Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$WrRXWgXLSxSj$4VUgWA1SaMEzDvuqisYaAbuc1rxCUSZSMehk2Rs2NxI=",
+            "email": "root@root.com",
+            "date_joined": "2012-06-17T08:48:15Z"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "auth.user",
+        "fields": {
+            "username": "trecouvr",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-06-17T06:45:52Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$texxTlFjLd2f$TfqgDr9mnuWT+h5I2LqnEQF5Gdwyki2remfx34qikVo=",
+            "email": "",
+            "date_joined": "2012-06-17T06:45:52Z"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "auth.user",
+        "fields": {
+            "username": "mguffroy",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-06-17T06:46:03Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$ULKfk3vxWfVt$r9JQGz48DGbn6v4B3MNpCraGM8qE16AIw/txpV6JAbE=",
+            "email": "",
+            "date_joined": "2012-06-17T06:46:03Z"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "auth.user",
+        "fields": {
+            "username": "puyouart",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-06-17T06:46:13Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$ULI1Y3Trg4eb$tEcBssef3C89ElHGkypClcYvX5rf/gbGIzkJXBHQdHg=",
+            "email": "",
+            "date_joined": "2012-06-17T06:46:13Z"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "diabolo.famille",
+        "fields": {
+            "alcool": false,
+            "name": "soda"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "diabolo.famille",
+        "fields": {
+            "alcool": true,
+            "name": "biere"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "diabolo.asso",
+        "fields": {
+            "name": "Picasso",
+            "sellers": [
+                1
+            ]
+        }
+    },
+    {
+        "pk": 2,
+        "model": "diabolo.asso",
+        "fields": {
+            "name": "UTCoupe",
+            "sellers": [
+                1
+            ]
+        }
+    },
+    {
+        "pk": 1,
+        "model": "diabolo.article",
+        "fields": {
+            "stockinitial": 300,
+            "name": "coca",
+            "priceTTC": 100,
+            "tva": "0.05",
+            "famille": 1,
+            "enVente": true,
+            "stock": 250
+        }
+    },
+    {
+        "pk": 2,
+        "model": "diabolo.article",
+        "fields": {
+            "stockinitial": 2000,
+            "name": "chouffe",
+            "priceTTC": 170,
+            "tva": "0.07",
+            "famille": 2,
+            "enVente": true,
+            "stock": 1500
+        }
+    },
+    {
+        "pk": 1,
+        "model": "diabolo.pointofsale",
+        "fields": {
+            "check_seller_pass": true,
+            "name": "Picasso",
+            "key": "openthepic"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "diabolo.pointofsale",
+        "fields": {
+            "check_seller_pass": false,
+            "name": "Tic",
+            "key": "tac"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "diabolo.pointofsale",
+        "fields": {
+            "check_seller_pass": false,
+            "name": "Tac",
+            "key": "tic"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "diabolo.transaction",
+        "fields": {
+            "asso": 2,
+            "nb": 1,
+            "pos": 1,
+            "seller": 2,
+            "date": "2011-06-17T08:25:31Z",
+            "prix_ttc": 100,
+            "buyer": 4,
+            "article": 1,
+            "tva": "0.05"
+        }
+    }
+]

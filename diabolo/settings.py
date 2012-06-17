@@ -125,11 +125,20 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     #'south', # database migration
     'tastypie', # rest api
+    'guardian', # acl
     'diabolo',
 ) + (
     'debug_toolbar', # debug
     'devserver', # debug
 ) if DEBUG else ()
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # this is default
+    'diabolo.badgebackend.BadgeBackend',
+    'guardian.backends.ObjectPermissionBackend',
+)
+ANONYMOUS_USER_ID = -1
+
 
 #####
 ### DEBUG TOOL BAR
@@ -176,8 +185,12 @@ LOGGING = {
     }
 }
 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 try:
-	from local_settings import *
-except ImportError:
-	pass
+    LOCAL_SETTINGS
+except NameError:
+    try:
+        from local_settings import *
+    except ImportError:
+        pass

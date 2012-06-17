@@ -135,11 +135,26 @@ class UserResource(ModelResource):
 	
 	def override_urls(self):
 		return [
-			url(r"^(?P<resource_name>%s)/logout%s$" % (self._meta.resource_name, trailing_slash()), self.wrap_view('logout'), name="api_logout"),
+			url(r"^(?P<resource_name>%s)/login%s$" %
+				(self._meta.resource_name, trailing_slash()),
+				self.wrap_view('login'), name="api_login"),
+			url(r"^(?P<resource_name>%s)/logout%s$" %
+				(self._meta.resource_name, trailing_slash()),
+				self.wrap_view('logout'), name="api_logout"),
+			url(r"^(?P<resource_name>%s)/me%s$" %
+				(self._meta.resource_name, trailing_slash()),
+				self.wrap_view('me'), name="api_me"),
 		] + self.base_urls()
+
+	def me(self, request, **kwargs):
+		kwargs['pk'] = request.user.id
+		return self.dispatch_detail(request, **kwargs)
 	
+	def login(self, request, **kwargs):
+		self.is_authenticated(request)
+		return self.create_response(request, {'success': True})
+		
 	def logout(self, request, **kwargs):
-		print "LOGOUT"
 		logout(request)
 		return self.create_response(request, {'success': True}) 
 	

@@ -3,9 +3,15 @@ from tastypie import fields
 from tastypie.authentication import Authentication
 from tastypie.authorization import Authorization
 from tastypie.http import HttpUnauthorized
+from tastypie.utils import is_valid_jsonp_callback_value, dict_strip_unicode_keys, trailing_slash
 
-from django.contrib.auth.models import User
+from django.conf.urls.defaults import url
+from django.contrib.auth.models import User, Group
+from django.contrib.auth import authenticate,login,logout
 from diabolo.models import *
+from django.conf import settings
+
+from django.utils import timezone
 
 class SillyAuthentication(Authentication):
 	def _unauthorized(self):
@@ -34,6 +40,9 @@ class SillyAuthentication(Authentication):
 		Should return either ``True`` if allowed, ``False`` if not or an
 		``HttpResponse`` if you need something custom.
 		"""
+		print timezone.now()
+		if hasattr(request, 'user') and request.user.is_authenticated():
+			return True
 
 		try:
 			badge_id, password, pos_id, pos_key = self.extract_credentials(request)
@@ -43,20 +52,26 @@ class SillyAuthentication(Authentication):
 		if not badge_id or not pos_id or not pos_key:
 			return self._unauthorized()
 
+		
+		# recuperation pos
 		try:
-			user = User.objects.get(userprofile__badge_id__exact=badge_id)
 			pos = PointOfSale.objects.get(pk=pos_id)
 		except Exception as ex:
 			print ex
 			return self._unauthorized()
 		if pos.key != pos_key:
 			return self._unauthorized()
-		if pos.check_seller_pass and password != user.userprofile.pass_seller:
-			return self._unauthorized()
-		
-		request.user = user
+
+		# recuperation seller
+		if not pos.check_seller_pass:
+			password = None
+		user = authenticate(badge_id=badge_id, password=password)
+		if not user or not user.is_active:
+			return self._unauthorized
+
+		# enregistrement dans la session
+		login(request, user)
 		request.session['pos'] = pos
-		
 		return True
 
 	def get_identifier(self, request):
@@ -75,11 +90,38 @@ class SillyAuthorization(Authorization):
 
 	# Optional but useful for advanced limiting, such as per user.
 	def apply_limits(self, request, object_list):
-		if request and hasattr(request, 'user'):
-			return object_list.filter(author__username=request.user.username)
+		# GET-style methods are always allowed.
+		if request.method in ('GET', 'OPTIONS', 'HEAD'):
+			return True
 
-		return object_list.none()
+		klass = self.resource_meta.object_class
 
+		# If it doesn't look like a model, we can't check permissions.
+		if not klass or not getattr(klass, '_meta', None):
+			print 'Does not look like a model, we can not check permissions'
+			return False
+
+		permission_map = {
+			'POST': ['%s.add_%s'],
+			'PUT': ['%s.change_%s'],
+			'DELETE': ['%s.delete_%s'],
+			'PATCH': ['%s.add_%s', '%s.change_%s', '%s.delete_%s'],
+		}
+		permission_codes = []
+
+		# If we don't recognize the HTTP method, we don't know what
+		# permissions to check. Deny.
+		if request.method not in permission_map:
+			return False
+
+		for perm in permission_map[request.method]:
+			permission_codes.append(perm % (klass._meta.app_label, klass._meta.module_name))
+
+		# User must be logged in to check permissions.
+		if not hasattr(request, 'user'):
+			return False
+
+		return request.user.has_perms(permission_codes, object_list)
 
 class UserResource(ModelResource):
 	class Meta:
@@ -90,7 +132,17 @@ class UserResource(ModelResource):
 		allowed_methods = ['get']
 		authentication = SillyAuthentication() #BasicAuthentication()
 		#authorization = DjangoAuthorization()
-
+	
+	def override_urls(self):
+		return [
+			url(r"^(?P<resource_name>%s)/logout%s$" % (self._meta.resource_name, trailing_slash()), self.wrap_view('logout'), name="api_logout"),
+		] + self.base_urls()
+	
+	def logout(self, request, **kwargs):
+		print "LOGOUT"
+		logout(request)
+		return self.create_response(request, {'success': True}) 
+	
 class ArticleResource(ModelResource):
 	class Meta:
 		queryset = Article.objects.all()
@@ -113,7 +165,7 @@ class TransactionResource(ModelResource):
 		queryset = Transaction.objects.select_related(depth=1).all()
 		resource_name = 'transaction'
 		authorization = Authorization()
-		authentication = SillyAuthentication()
+		#authentication = SillyAuthentication()
 
 class ReversementResource(ModelResource):
 	class Meta:
@@ -130,8 +182,8 @@ class AssoResource(ModelResource):
 		queryset = Asso.objects.all()
 		authentication = SillyAuthentication()
 
-class GroupeResource(ModelResource):
+class GroupResource(ModelResource):
 	class Meta:
-		queryset = Groupe.objects.all()
+		queryset = Group.objects.all()
 		authentication = SillyAuthentication()
 		

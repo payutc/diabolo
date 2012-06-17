@@ -247,20 +247,5 @@
             "name": "Tac",
             "key": "tic"
         }
-    },
-    {
-        "pk": 1,
-        "model": "diabolo.transaction",
-        "fields": {
-            "asso": 2,
-            "nb": 1,
-            "pos": 1,
-            "seller": 2,
-            "date": "2011-06-17T08:25:31Z",
-            "prix_ttc": 100,
-            "buyer": 4,
-            "article": 1,
-            "tva": "0.05"
-        }
     }
 ]

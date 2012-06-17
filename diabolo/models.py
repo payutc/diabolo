@@ -74,24 +74,46 @@ class ArticlePos(models.Model):
 class Reversement(models.Model):
 	date = models.DateTimeField()
 	montant = models.IntegerField()
+	asso = models.ForeignKey(Asso)
 	ref = models.CharField(max_length=255)
 	
 	def __unicode__(self):
 		return self.name
-	
+
+
 class Transaction(models.Model):
-	article = models.ForeignKey(Article, null=True)
-	buyer = models.ForeignKey(User, related_name="user")
-	seller = models.ForeignKey(User, null=True, related_name="seller")
-	asso = models.ForeignKey(Asso, null=True, related_name="asso")
-	pos = models.ForeignKey(PointOfSale, related_name="pos")
+	user = models.ForeignKey(User)
+	amount = models.IntegerField()
 	date = models.DateTimeField(auto_now_add=True)
-	nb = models.IntegerField(default=1)
-	prix_ttc = models.IntegerField()
-	tva = models.DecimalField(max_digits=3, decimal_places=2)
+	TCHOICE = (
+		('P', 'Paybox'),
+		('A', 'Achat'),
+		('V', 'Virement')
+	)
+	t = models.CharField(max_length=1, choices=TCHOICE)
+	desc = models.CharField(max_length=255)
 
 	def __unicode__(self):
-		return "Transaction(article=%s,seller=%s,buyer=%s,pos=%s,date=%s,tarifs=%s)" % (
+		return "Transaction(type=%s,montant=%s,date=%s,user=%s)" % (
+			self.t,
+			self.amount,
+			self.date,
+			self.user
+		)
+
+class Achat(models.Model):
+	article = models.ForeignKey(Article)
+	buyer = models.ForeignKey(User, related_name="buyer")
+	seller = models.ForeignKey(User, related_name="seller")
+	asso = models.ForeignKey(Asso, related_name="asso")
+	pos = models.ForeignKey(PointOfSale, related_name="pos")
+	date = models.DateTimeField(auto_now_add=True)
+	prix_ttc = models.IntegerField()
+	tva = models.DecimalField(max_digits=3, decimal_places=2)
+	transaction = models.ForeignKey(Transaction, null=True)
+
+	def __unicode__(self):
+		return "Achat(article=%s,seller=%s,buyer=%s,pos=%s,date=%s,tarifs=%s)" % (
 			self.article,
 			self.seller,
 			self.buyer,
@@ -99,4 +121,38 @@ class Transaction(models.Model):
 			self.date,
 			self.prix_ttc
 		)
+		
+class Paybox(models.Model):
+	loader = models.ForeignKey(User, related_name="loader")
+	date = models.DateTimeField(auto_now_add=True)
+	amount = models.IntegerField()
+	STATECHOICE = (
+		('W', 'Wait paybox'),
+		('A', 'Aborted'),
+		('S', 'Success')
+	)
+	state = models.CharField(max_length=1, choices=STATECHOICE)
+	transaction = models.ForeignKey(Transaction, null=True)
 
+	def __unicode__(self):
+		return "Paybox(buyer=%s,date=%s,amount=%s,state=%s)" % (
+			self.buyer,
+			self.date,
+			self.amount,
+			self.state
+		)
+		
+class Virement(models.Model):
+	userfrom = models.ForeignKey(User, related_name="donneur")
+	userto = models.ForeignKey(User, related_name="receveur")
+	date = models.DateTimeField(auto_now_add=True)
+	amount = models.IntegerField()
+	transaction = models.ForeignKey(Transaction, null=True)
+
+	def __unicode__(self):
+		return "Virement(donneur=%s,receveur=%s,date=%s,amount=%s)" % (
+			self.userfrom,
+			self.userto,
+			self.date,
+			self.amount
+		)

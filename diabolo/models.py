@@ -81,7 +81,7 @@ class Reversement(models.Model):
 	
 class Transaction(models.Model):
 	article = models.ForeignKey(Article, null=True)
-	user = models.ForeignKey(User, related_name="user")
+	buyer = models.ForeignKey(User, related_name="user")
 	seller = models.ForeignKey(User, null=True, related_name="seller")
 	asso = models.ForeignKey(Asso, null=True, related_name="asso")
 	pos = models.ForeignKey(PointOfSale, related_name="pos")
@@ -97,6 +97,6 @@ class Transaction(models.Model):
 			self.buyer,
 			self.pos,
 			self.date,
-			self.tarifs
+			self.prix_ttc
 		)
 

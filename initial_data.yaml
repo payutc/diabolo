@@ -1,0 +1,177 @@
+- fields:
+    badge_id: '1234'
+    birthday: 2012-06-17
+    bloque: false
+    created: 2012-06-16 22:31:19+00:00
+    pass_seller: '1234'
+    solde: 2000
+    updated: 2012-06-17 10:23:36+00:00
+    user: 1
+  model: diabolo.userprofile
+  pk: 1
+- fields:
+    badge_id: ''
+    birthday: null
+    bloque: false
+    created: 2012-06-16 22:31:19+00:00
+    pass_seller: ''
+    solde: 0
+    updated: 2012-06-16 22:31:19+00:00
+    user: -1
+  model: diabolo.userprofile
+  pk: 2
+- fields:
+    badge_id: '1234'
+    birthday: 2012-06-17
+    bloque: false
+    created: 2012-06-17 10:22:08+00:00
+    pass_seller: '1234'
+    solde: 2000
+    updated: 2012-06-17 10:23:57+00:00
+    user: 2
+  model: diabolo.userprofile
+  pk: 3
+- fields:
+    badge_id: '1234'
+    birthday: 2012-06-17
+    bloque: false
+    created: 2012-06-17 10:22:20+00:00
+    pass_seller: '1234'
+    solde: 2000
+    updated: 2012-06-17 10:24:09+00:00
+    user: 3
+  model: diabolo.userprofile
+  pk: 4
+- fields:
+    badge_id: '1234'
+    birthday: 2012-06-17
+    bloque: false
+    created: 2012-06-17 10:22:30+00:00
+    pass_seller: '1234'
+    solde: 2000
+    updated: 2012-06-17 10:24:22+00:00
+    user: 4
+  model: diabolo.userprofile
+  pk: 5
+- fields:
+    date_joined: 2012-06-17 10:48:15+00:00
+    email: root@root.com
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    last_login: 2012-06-17 10:48:15+00:00
+    last_name: ''
+    password: pbkdf2_sha256$10000$WrRXWgXLSxSj$4VUgWA1SaMEzDvuqisYaAbuc1rxCUSZSMehk2Rs2NxI=
+    user_permissions: []
+    username: root
+  model: auth.user
+  pk: 1
+- fields:
+    date_joined: 2012-06-17 10:48:15+00:00
+    email: ''
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: 2012-06-17 10:48:15+00:00
+    last_name: ''
+    password: ''
+    user_permissions: []
+    username: AnonymousUser
+  model: auth.user
+  pk: -1
+- fields:
+    date_joined: 2012-06-17 08:45:52+00:00
+    email: ''
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: 2012-06-17 08:45:52+00:00
+    last_name: ''
+    password: pbkdf2_sha256$10000$texxTlFjLd2f$TfqgDr9mnuWT+h5I2LqnEQF5Gdwyki2remfx34qikVo=
+    user_permissions: []
+    username: trecouvr
+  model: auth.user
+  pk: 2
+- fields:
+    date_joined: 2012-06-17 08:46:03+00:00
+    email: ''
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: 2012-06-17 08:46:03+00:00
+    last_name: ''
+    password: pbkdf2_sha256$10000$ULKfk3vxWfVt$r9JQGz48DGbn6v4B3MNpCraGM8qE16AIw/txpV6JAbE=
+    user_permissions: []
+    username: mguffroy
+  model: auth.user
+  pk: 3
+- fields:
+    date_joined: 2012-06-17 08:46:13+00:00
+    email: ''
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: 2012-06-17 08:46:13+00:00
+    last_name: ''
+    password: pbkdf2_sha256$10000$ULI1Y3Trg4eb$tEcBssef3C89ElHGkypClcYvX5rf/gbGIzkJXBHQdHg=
+    user_permissions: []
+    username: puyouart
+  model: auth.user
+  pk: 4
+- fields: {alcool: false, name: soda}
+  model: diabolo.famille
+  pk: 1
+- fields: {alcool: true, name: biere}
+  model: diabolo.famille
+  pk: 2
+- fields:
+    name: Picasso
+    sellers:
+    - [root]
+  model: diabolo.asso
+  pk: 1
+- fields:
+    name: UTCoupe
+    sellers:
+    - [root]
+  model: diabolo.asso
+  pk: 2
+- fields: {enVente: true, famille: 1, name: coca, priceTTC: 100, stock: 250,
+    stockinitial: 300, tva: '0.05'}
+  model: diabolo.article
+  pk: 1
+- fields: {enVente: true, famille: 2, name: chouffe, priceTTC: 170, stock: 1500,
+    stockinitial: 2000, tva: '0.07'}
+  model: diabolo.article
+  pk: 2
+- fields: {check_seller_pass: true, key: openthepic, name: Picasso}
+  model: diabolo.pointofsale
+  pk: 1
+- fields: {check_seller_pass: false, key: tac, name: Tic}
+  model: diabolo.pointofsale
+  pk: 2
+- fields: {check_seller_pass: false, key: tic, name: Tac}
+  model: diabolo.pointofsale
+  pk: 3
+- fields:
+    article: 1
+    asso: 2
+    date: 2012-06-17 10:25:31+00:00
+    nb: 1
+    pos: 1
+    prix_ttc: 100
+    seller: [trecouvr]
+    tva: '0.05'
+    buyer: [puyouart]
+  model: diabolo.transaction
+  pk: 1

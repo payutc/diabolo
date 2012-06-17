@@ -20,7 +20,7 @@ class UserProfile(models.Model):
 
 def create_user_profile(sender, instance, created, **kwargs):
 	if created:
-		UserProfile.objects.create(user=instance)
+		UserProfile.objects.get_or_create(user=instance)
 
 post_save.connect(create_user_profile, sender=User)
 
@@ -33,7 +33,6 @@ class Groupe(models.Model):
 class Famille(models.Model):
 	name = models.CharField(max_length=50)
 	alcool = models.BooleanField()
-	groupe = models.ForeignKey(Groupe, related_name="Groupe")
 	
 	def __unicode__(self):
 		return self.name
@@ -47,8 +46,7 @@ class Asso(models.Model):
 
 class Article(models.Model):
 	name = models.CharField(max_length=50)
-	famille = models.ForeignKey(Famille, related_name="Famille")
-	asso = models.ForeignKey(Asso, related_name="Association")
+	famille = models.ForeignKey(Famille)
 	stockinitial = models.IntegerField(null=True)
 	stock = models.IntegerField(null=True)
 	enVente = models.BooleanField()
@@ -91,7 +89,6 @@ class Transaction(models.Model):
 	nb = models.IntegerField(default=1)
 	prix_ttc = models.IntegerField()
 	tva = models.DecimalField(max_digits=3, decimal_places=2)
-	reverse = models.ForeignKey(Reversement, null=True, related_name="Transactionreverse")
 
 	def __unicode__(self):
 		return "Transaction(article=%s,seller=%s,buyer=%s,pos=%s,date=%s,tarifs=%s)" % (

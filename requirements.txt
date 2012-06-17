@@ -1,8 +1,10 @@
 Django
 South
-django-debug-toolbar
+django-guardian
 django-tastypie
 MySQL-python
+pyyaml
+django-debug-toolbar
 git+git://github.com/dcramer/django-devserver#egg=django-devserver
 sqlparse
 werkzeug

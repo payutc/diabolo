@@ -1,13 +1,15 @@
 import diabolo.models as diabolo_models
 from django.db.models import Model
 from django.contrib import admin
+from guardian.admin import GuardedModelAdmin
 import inspect
+
 
 for name,obj in inspect.getmembers(diabolo_models):
 	try:
 		if name and inspect.isclass(obj) and isinstance(obj(), Model):
 			try:
-				admin.site.register(obj)
+				admin.site.register(obj, GuardedModelAdmin)
 			except admin.sites.AlreadyRegistered:
 				pass
 	except Exception:

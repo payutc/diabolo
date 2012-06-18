@@ -5,6 +5,7 @@ from tastypie.authentication import MultiAuthentication,BasicAuthentication,Auth
 from tastypie.authorization import Authorization
 from tastypie.http import HttpUnauthorized
 from tastypie.utils import is_valid_jsonp_callback_value, dict_strip_unicode_keys, trailing_slash
+from tastypie.validation import Validation
 
 from django.conf.urls.defaults import url
 from django.contrib.auth.models import User, Group
@@ -77,12 +78,13 @@ class MyAuthentication(Authentication):
 		except Exception as ex:
 			print ex
 			return self._unauthorized()
-
+		
 		# authenticate
 		user = self.authenticate(request)
 		if not user or not user.is_active:
+			print "no user"
 			return self._unauthorized
-
+		
 		# login
 		login(request, user)
 		# post login
@@ -105,19 +107,22 @@ class UserAuthentication(MyAuthentication):
 	
 class PosAuthentication(MyAuthentication):
 	def __init__(self):
-		super(PosAuthentication, self).__init__('user', (('badge_id',True),('password',False),('pos_id',True),('pos_key',True)))
+		super(PosAuthentication, self).__init__('pos', (('badge_id',True),('password',False),('pos_id',True),('pos_key',True),('asso_id',True)))
 
 	def pre_authenticate(self, request):
+		# TODO check seller in asso
 		self.pos = PointOfSale.objects.get(pk=self.credentials['pos_id'])
+		self.asso = Asso.objects.get(pk=self.credentials['asso_id'])
 		
-		if self.pos.key != pos_key:
+		if self.pos.key != self.credentials['pos_key']:
 			raise Exception('pos_key is invalid')
 
 		if not self.pos.check_seller_pass:
 			self.credentials['password'] = False
 
-	def post_login(self, request):
+	def post_login(self, request, user):
 		request.session['pos'] = self.pos
+		request.session['asso'] = self.asso
 
 
 class TransactionAuthorization(Authorization):
@@ -167,7 +172,6 @@ class UserResource(ModelResource):
 		fields = ['username', 'first_name', 'last_name']
 		allowed_methods = ['get']
 		authentication = MultiAuthentication(PosAuthentication(),UserAuthentication())
-		#authorization = DjangoAuthorization()
 	
 	def prepend_urls(self):
 		return [
@@ -211,9 +215,36 @@ class POSResource(ModelResource):
 		resource_name = 'pos'
 		authentication = PosAuthentication()
 
+
 class AchatResource(ModelResource):
 	def hydrate(self, bundle):
-		print "COUCOU",bundle
+		print "HYDRATE"
+		print bundle.data
+		# get article
+		article = Article.objects.get(pk=bundle.data['article'])
+		# get buyer
+		buyer = User.objects.get(userprofile__badge_id=bundle.data['badge_id'])
+		# get seller
+		seller = bundle.request.user
+		# get pos
+		pos = bundle.request.session['pos']
+		# get asso
+		asso = bundle.request.session['asso']
+
+		# store in data
+		bundle.data['tva'] = article.tva
+
+		# store directly relation in object
+		bundle.obj.article = article
+		bundle.obj.seller = seller
+		bundle.obj.buyer = buyer
+		bundle.obj.pos = pos
+		bundle.obj.asso = asso
+
+		# store directly amount and description needed for save function
+		bundle.obj.amount = article.prix_ttc
+		bundle.obj.description = bundle.data['description']
+		
 		return bundle
 	
 	class Meta:
@@ -221,36 +252,7 @@ class AchatResource(ModelResource):
 		authorization = Authorization()
 		authentication = MultiAuthentication(PosAuthentication(),UserAuthentication())
 
-		
-class TransactionResource(ModelResource):
-	buyer = fields.ForeignKey(UserResource, 'buyer')
-	seller = fields.ForeignKey(UserResource, 'seller')
-	article = fields.ForeignKey(ArticleResource, 'article')
-	pos = fields.ForeignKey(POSResource, 'pos')
-	
-	class Meta:
-		queryset = Transaction.objects.select_related(depth=1).all()
-		resource_name = 'transaction'
-		authorization = Authorization()
-		#authentication = PosAuthentication()
-
-class ReversementResource(ModelResource):
-	class Meta:
-		queryset = Reversement.objects.all()
-		authentication = PosAuthentication()
-		
-class FamilleResource(ModelResource):
-	class Meta:
-		queryset = Famille.objects.all()
-		authentication = PosAuthentication()
-		
 class AssoResource(ModelResource):
 	class Meta:
 		queryset = Asso.objects.all()
 		authentication = PosAuthentication()
-
-class GroupResource(ModelResource):
-	class Meta:
-		queryset = Group.objects.all()
-		authentication = PosAuthentication()
-		

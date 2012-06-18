@@ -2,9 +2,9 @@ from django.conf import settings
 from django.contrib.auth.models import User, check_password
 
 class BadgeBackend(object):
-	def authenticate(self, badge_id=None, password=None):
+	def authenticate(self, badge_id=None, password=None, **kwargs):
 		try:
-			user = User.objects.get(userprofile__badge_id__exact=badge_id)
+			user = User.objects.get(userprofile__badge_id=badge_id)
 			if not password or user.check_password(password):
 				return user
 			return None

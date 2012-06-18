@@ -3,11 +3,11 @@ from django.contrib.auth.models import User
 
 from django.db.models.signals import post_save
 
+from django.core.exceptions import ValidationError
 
 class UserProfile(models.Model):
 	user = models.OneToOneField(User)
 	badge_id = models.CharField(max_length=50)
-	pass_seller = models.CharField(max_length=50) # A virer selon matthieu
 	birthday = models.DateField(null=True)
 	bloque = models.BooleanField(default=False)
 	solde = models.IntegerField(default=0)
@@ -51,7 +51,7 @@ class Article(models.Model):
 	stock = models.IntegerField(null=True)
 	enVente = models.BooleanField()
 	tva = models.DecimalField(default=0.0, max_digits=3, decimal_places=2)
-	priceTTC = models.IntegerField()
+	prix_ttc = models.IntegerField()
 
 	def __unicode__(self):
 		return self.name
@@ -110,28 +110,37 @@ class Achat(models.Model):
 	date = models.DateTimeField(auto_now_add=True)
 	tva = models.DecimalField(max_digits=3, decimal_places=2)
 	transaction = models.ForeignKey(Transaction, null=True)
-
+	
+	amount = None
+	description = None
+	
 	def save(self, *args, **kwargs):
-		amount = kwargs.get('amount', None)
-		description = kwargs.get('description', None)
+		amount = kwargs.get('amount', None) or self.amount
+		description = kwargs.get('description', None) or self.description
 	
 		if not amount or not description:
 			raise Exception("need amount and description")
-		self.full_clean(exclude=['transaction'])
-		del kwargs['amount']
-		del kwargs['description']
+			
+		if 'amount' in kwargs: del kwargs['amount']
+		if 'description' in kwargs: del kwargs['description']
+		
+		try:
+			self.full_clean(exclude=['transaction','date'])
+		except ValidationError as e:
+			print e
+			raise e
 		transaction = Transaction.objects.create(t='A', user=self.buyer, amount=amount, description=description)
 		self.transaction = transaction
 		super(Achat, self).save(*args, **kwargs)
 	
 	def __unicode__(self):
-		return "Achat(article=%s,seller=%s,buyer=%s,pos=%s,date=%s,tarifs=%s)" % (
+		return "Achat(article=%s,seller=%s,buyer=%s,pos=%s,asso=%s,date=%s)" % (
 			self.article,
 			self.seller,
 			self.buyer,
 			self.pos,
+			self.asso,
 			self.date,
-			self.prix_ttc
 		)
 
 		

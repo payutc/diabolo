@@ -6,9 +6,8 @@
             "updated": "2012-06-17T08:23:36Z",
             "created": "2012-06-16T20:31:19Z",
             "solde": 2000,
-            "pass_seller": "1234",
             "birthday": "2012-06-17",
-            "badge_id": "1234",
+            "badge_id": "1111",
             "user": 1,
             "bloque": false
         }
@@ -20,7 +19,6 @@
             "updated": "2012-06-16T20:31:19Z",
             "created": "2012-06-16T20:31:19Z",
             "solde": 0,
-            "pass_seller": "",
             "birthday": null,
             "badge_id": "",
             "user": -1,
@@ -34,9 +32,8 @@
             "updated": "2012-06-17T08:23:57Z",
             "created": "2012-06-17T08:22:08Z",
             "solde": 2000,
-            "pass_seller": "1234",
             "birthday": "2012-06-17",
-            "badge_id": "1234",
+            "badge_id": "2222",
             "user": 2,
             "bloque": false
         }
@@ -48,9 +45,8 @@
             "updated": "2012-06-17T08:24:09Z",
             "created": "2012-06-17T08:22:20Z",
             "solde": 2000,
-            "pass_seller": "1234",
             "birthday": "2012-06-17",
-            "badge_id": "1234",
+            "badge_id": "333",
             "user": 3,
             "bloque": false
         }
@@ -62,9 +58,8 @@
             "updated": "2012-06-17T08:24:22Z",
             "created": "2012-06-17T08:22:30Z",
             "solde": 2000,
-            "pass_seller": "1234",
             "birthday": "2012-06-17",
-            "badge_id": "1234",
+            "badge_id": "4444",
             "user": 4,
             "bloque": false
         }
@@ -201,7 +196,7 @@
         "fields": {
             "stockinitial": 300,
             "name": "coca",
-            "priceTTC": 100,
+            "prix_ttc": 100,
             "tva": "0.05",
             "famille": 1,
             "enVente": true,
@@ -214,7 +209,7 @@
         "fields": {
             "stockinitial": 2000,
             "name": "chouffe",
-            "priceTTC": 170,
+            "prix_ttc": 170,
             "tva": "0.07",
             "famille": 2,
             "enVente": true,

@@ -1,9 +1,27 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
-from django.db.models.signals import post_save
-
+from django.db.models.signals import post_save,post_syncdb
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+
+
+def add_can_view_permission(sender, **kwargs):
+	for content_type in ContentType.objects.all():
+		Permission.objects.get_or_create(content_type=content_type, codename='view_%s' % content_type.model, name='Can view %s' % content_type.name)
+
+def create_user_profile(sender, instance, created, **kwargs):
+	if created:
+		UserProfile.objects.get_or_create(user=instance)
+
+# signals
+post_save.connect(create_user_profile, sender=User)
+post_syncdb.connect(add_can_view_permission)
+
+class Asso(Group):
+	class Meta:
+		proxy = True
 
 class UserProfile(models.Model):
 	user = models.OneToOneField(User)
@@ -18,12 +36,6 @@ class UserProfile(models.Model):
 		return "Profile : "+self.user.username
 
 
-def create_user_profile(sender, instance, created, **kwargs):
-	if created:
-		UserProfile.objects.get_or_create(user=instance)
-
-post_save.connect(create_user_profile, sender=User)
-
 class Groupe(models.Model):
 	name = models.CharField(max_length=50)
 	
@@ -37,12 +49,6 @@ class Famille(models.Model):
 	def __unicode__(self):
 		return self.name
 
-class Asso(models.Model):
-	name = models.CharField(max_length=50)
-	sellers = models.ManyToManyField(User, verbose_name="list of sellers")
-
-	def __unicode__(self):
-		return self.name
 
 class Article(models.Model):
 	name = models.CharField(max_length=50)
@@ -85,12 +91,6 @@ class Transaction(models.Model):
 	user = models.ForeignKey(User)
 	amount = models.IntegerField()
 	date = models.DateTimeField(auto_now_add=True)
-	TCHOICE = (
-		('P', 'Paybox'),
-		('A', 'Achat'),
-		('V', 'Virement')
-	)
-	t = models.CharField(max_length=1, choices=TCHOICE)
 	description = models.CharField(max_length=255)
 
 	def __unicode__(self):
@@ -101,37 +101,19 @@ class Transaction(models.Model):
 			self.user
 		)
 
-class Achat(models.Model):
+class Achat(Transaction):
 	article = models.ForeignKey(Article)
-	buyer = models.ForeignKey(User, related_name="buyer")
 	seller = models.ForeignKey(User, related_name="seller")
 	asso = models.ForeignKey(Asso, related_name="asso")
 	pos = models.ForeignKey(PointOfSale, related_name="pos")
-	date = models.DateTimeField(auto_now_add=True)
 	tva = models.DecimalField(max_digits=3, decimal_places=2)
-	transaction = models.ForeignKey(Transaction, null=True)
-	
-	amount = None
-	description = None
-	
-	def save(self, *args, **kwargs):
-		amount = kwargs.get('amount', None) or self.amount
-		description = kwargs.get('description', None) or self.description
-	
-		if not amount or not description:
-			raise Exception("need amount and description")
-			
-		if 'amount' in kwargs: del kwargs['amount']
-		if 'description' in kwargs: del kwargs['description']
-		
-		try:
-			self.full_clean(exclude=['transaction','date'])
-		except ValidationError as e:
-			print e
-			raise e
-		transaction = Transaction.objects.create(t='A', user=self.buyer, amount=amount, description=description)
-		self.transaction = transaction
-		super(Achat, self).save(*args, **kwargs)
+
+	@property
+	def buyer(self):
+		return self.user
+	@buyer.setter
+	def buyer(self, value):
+		self.user = value
 	
 	def __unicode__(self):
 		return "Achat(article=%s,seller=%s,buyer=%s,pos=%s,asso=%s,date=%s)" % (
@@ -144,33 +126,24 @@ class Achat(models.Model):
 		)
 
 		
-class Paybox(models.Model):
-	loader = models.ForeignKey(User, related_name="loader")
-	date = models.DateTimeField(auto_now_add=True)
-	amount = models.IntegerField()
+class Paybox(Transaction):
 	STATECHOICE = (
 		('W', 'Wait paybox'),
 		('A', 'Aborted'),
 		('S', 'Success')
 	)
 	state = models.CharField(max_length=1, choices=STATECHOICE)
-	transaction = models.ForeignKey(Transaction, null=True)
-
-	def __unicode__(self):
-		return "Paybox(buyer=%s,date=%s,amount=%s,state=%s)" % (
-			self.buyer,
-			self.date,
-			self.amount,
-			self.state
-		)
 		
-class Virement(models.Model):
-	userfrom = models.ForeignKey(User, related_name="donneur")
-	userto = models.ForeignKey(User, related_name="receveur")
-	date = models.DateTimeField(auto_now_add=True)
-	amount = models.IntegerField()
-	transaction = models.ForeignKey(Transaction, null=True)
+class Virement(Transaction):
+	userfrom = models.OneToOneField(User, related_name="donneur")
 
+	@property
+	def userto(self):
+		return self.user
+	@userto.setter
+	def userto(self, value):
+		self.user = value
+	
 	def __unicode__(self):
 		return "Virement(donneur=%s,receveur=%s,date=%s,amount=%s)" % (
 			self.userfrom,

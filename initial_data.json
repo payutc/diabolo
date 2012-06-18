@@ -1,6 +1,22 @@
 [
     {
         "pk": 1,
+        "model": "auth.group",
+        "fields": {
+            "name": "Picasso",
+            "permissions": []
+        }
+    },
+    {
+        "pk": 2,
+        "model": "auth.group",
+        "fields": {
+            "name": "Utcoupe",
+            "permissions": []
+        }
+    },
+    {
+        "pk": 1,
         "model": "diabolo.userprofile",
         "fields": {
             "updated": "2012-06-17T08:23:36Z",
@@ -92,8 +108,12 @@
             "is_active": true,
             "is_superuser": true,
             "is_staff": true,
-            "last_login": "2012-06-17T08:48:15Z",
-            "groups": [],
+            "last_login": "2012-06-18T12:06:06Z",
+            "groups": [
+                [
+                    "Picasso"
+                ]
+            ],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$WrRXWgXLSxSj$4VUgWA1SaMEzDvuqisYaAbuc1rxCUSZSMehk2Rs2NxI=",
             "email": "root@root.com",
@@ -111,7 +131,11 @@
             "is_superuser": false,
             "is_staff": false,
             "last_login": "2012-06-17T06:45:52Z",
-            "groups": [],
+            "groups": [
+                [
+                    "Picasso"
+                ]
+            ],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$texxTlFjLd2f$TfqgDr9mnuWT+h5I2LqnEQF5Gdwyki2remfx34qikVo=",
             "email": "",
@@ -168,26 +192,6 @@
         "fields": {
             "alcool": true,
             "name": "biere"
-        }
-    },
-    {
-        "pk": 1,
-        "model": "diabolo.asso",
-        "fields": {
-            "name": "Picasso",
-            "sellers": [
-                1
-            ]
-        }
-    },
-    {
-        "pk": 2,
-        "model": "diabolo.asso",
-        "fields": {
-            "name": "UTCoupe",
-            "sellers": [
-                1
-            ]
         }
     },
     {

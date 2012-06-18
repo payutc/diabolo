@@ -6,10 +6,10 @@ admin.autodiscover()
 
 from tastypie.api import Api
 v1_api = Api(api_name='v1')
-import diabolo.api
+from diabolo.api import api
 import inspect
 
-for name,obj in inspect.getmembers(diabolo.api):
+for name,obj in inspect.getmembers(api):
 	if 'Resource' in name and 'ModelResource' != name and inspect.isclass(obj):
 		v1_api.register(obj())
 

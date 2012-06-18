@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from tastypie.resources import ModelResource
 from tastypie import fields
 from tastypie.authentication import MultiAuthentication,BasicAuthentication,Authentication
@@ -11,9 +12,32 @@ from django.contrib.auth import authenticate,login,logout
 from diabolo.models import *
 from django.conf import settings
 
-class UserAuthentication(Authentication):
+from collections import OrderedDict
+
+class MyAuthentication(Authentication):
+	def __init__(self, auth_type, credentials):
+		# identification par header
+		self.auth_type = auth_type
+		# stores credentials extracted
+		self.credentials = dict()
+		self.required = dict()
+		for name,required in credentials:
+			self.credentials[name] = None
+			self.required[name] = required
+			
+
 	def _unauthorized(self):
 		return HttpUnauthorized()
+	
+	def pre_authenticate(self, request):
+		pass
+
+	def authenticate(self, request):
+		user = authenticate(**self.credentials)
+		return user
+	
+	def post_login(self, request, user):
+		pass
 
 	def extract_credentials(self, request):
 		if request.META.get('HTTP_AUTHORIZATION'):
@@ -22,106 +46,48 @@ class UserAuthentication(Authentication):
 			if auth_type.lower() != 'pos':
 				raise ValueError("Incorrect authorization header.")
 
-			username, password = data.split(':', 1)
+			values = data.split(':', len(d)-1)
+			for x,v in zip(self.credentials,values):
+				self.credentials[x] = v
 		else:
-			username = request.GET.get('username') or request.POST.get('username')
-			password = request.GET.get('password') or request.POST.get('password')
-
-		return username, password
+			for x in self.credentials:
+				self.credentials[x] = request.GET.get(x) or request.POST.get(x)
 	
-	def is_authenticated(self, request, **kwargs):
-		"""
-		Finds the user and checks their API key.
+	def is_authenticated(self, request):
 
-		Should return either ``True`` if allowed, ``False`` if not or an
-		``HttpResponse`` if you need something custom.
-		"""
+		# check si l'user est déjà autentifié
 		if hasattr(request, 'user') and request.user.is_authenticated():
 			return True
-
+		
+		# récupération des crédentials
 		try:
-			username, password = self.extract_credentials(request)
+			self.extract_credentials(request)
 		except ValueError:
 			return self._unauthorized()
 
-		if not username or not password:
-			return self._unauthorized()
-		
-		user = authenticate(username=username, password=password)
-		if not user or not user.is_active:
-			return self._unauthorized
+		# check que ceux requies sont bien présents
+		for x in self.credentials:
+			required = self.required.get(x, False)
+			if required and not self.credentials[x]:
+				return self._unauthorized()
 
-		# enregistrement dans la session
-		login(request, user)
-		
-		return True
-
-	def get_identifier(self, request):
-		"""
-		Provides a unique string identifier for the requestor.
-
-		This implementation returns the user's username.
-		"""
-		return request.user.username
-	
-class PosAuthentication(Authentication):
-	def _unauthorized(self):
-		return HttpUnauthorized()
-
-	def extract_credentials(self, request):
-		if request.META.get('HTTP_AUTHORIZATION'):
-			(auth_type, data) = request.META['HTTP_AUTHORIZATION'].split()
-
-			if auth_type.lower() != 'pos':
-				raise ValueError("Incorrect authorization header.")
-
-			badge_id, password, pos_id, pos_key = data.split(':', 3)
-		else:
-			badge_id = request.GET.get('badge_id') or request.POST.get('badge_id')
-			password = request.GET.get('password') or request.POST.get('password')
-			pos_id = request.GET.get('pos_id') or request.POST.get('pos_id')
-			pos_key = request.GET.get('pos_key') or request.POST.get('pos_key')
-
-		return badge_id, password, pos_id, pos_key
-
-	def is_authenticated(self, request, **kwargs):
-		"""
-		Finds the user and checks their API key.
-
-		Should return either ``True`` if allowed, ``False`` if not or an
-		``HttpResponse`` if you need something custom.
-		"""
-		if hasattr(request, 'user') and request.user.is_authenticated():
-			return True
-
+		# pre authenticate
 		try:
-			badge_id, password, pos_id, pos_key = self.extract_credentials(request)
-		except ValueError:
-			return self._unauthorized()
-
-		if not badge_id or not pos_id or not pos_key:
-			return self._unauthorized()
-
-		
-		# recuperation pos
-		try:
-			pos = PointOfSale.objects.get(pk=pos_id)
+			self.pre_authenticate(request)
 		except Exception as ex:
 			print ex
 			return self._unauthorized()
-		if pos.key != pos_key:
-			return self._unauthorized()
 
-		# recuperation seller
-		if not pos.check_seller_pass:
-			password = None
-		user = authenticate(badge_id=badge_id, password=password)
+		# authenticate
+		user = self.authenticate(request)
 		if not user or not user.is_active:
 			return self._unauthorized
 
-		# enregistrement dans la session
+		# login
 		login(request, user)
-		request.session['pos'] = pos
+		# post login
+		self.post_login(request, user)
+		
 		return True
 
 	def get_identifier(self, request):
@@ -131,6 +97,27 @@ class PosAuthentication(Authentication):
 		This implementation returns the user's username.
 		"""
 		return request.user.username
+	
+class UserAuthentication(MyAuthentication):
+	def __init__(self):
+		super(UserAuthentication, self).__init__('user', (('username',True),('password',True)))
+	
+	
+class PosAuthentication(MyAuthentication):
+	def __init__(self):
+		super(PosAuthentication, self).__init__('user', (('badge_id',True),('password',False),('pos_id',True),('pos_key',True)))
+
+	def pre_authenticate(self, request):
+		self.pos = PointOfSale.objects.get(pk=self.credentials['pos_id'])
+		
+		if self.pos.key != pos_key:
+			raise Exception('pos_key is invalid')
+
+		if not self.pos.check_seller_pass:
+			self.credentials['password'] = False
+
+	def post_login(self, request):
+		request.session['pos'] = self.pos
 
 
 class TransactionAuthorization(Authorization):

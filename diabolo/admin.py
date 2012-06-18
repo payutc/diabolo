@@ -4,11 +4,14 @@ from django.contrib import admin
 import inspect
 
 for name,obj in inspect.getmembers(diabolo_models):
-	if name and inspect.isclass(obj) and isinstance(obj(), Model):
-		try:
-			admin.site.register(obj)
-		except admin.sites.AlreadyRegistered:
-			pass
+	try:
+		if name and inspect.isclass(obj) and isinstance(obj(), Model):
+			try:
+				admin.site.register(obj)
+			except admin.sites.AlreadyRegistered:
+				pass
+	except Exception:
+		pass
 
 """
 admin.site.register(UserProfile)

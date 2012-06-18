@@ -246,5 +246,85 @@
             "name": "Tac",
             "key": "tic"
         }
-    }
-]
+    },
+    {
+        "pk": 1,
+        "model": "diabolo.achat",
+        "fields": {
+            "article": 1,
+            "asso": [
+                "Picasso"
+            ],
+            "tva": "0.05",
+            "pos": 1,
+            "seller": [
+                "root"
+            ]
+        }
+    },
+    {
+        "pk": 2,
+        "model": "diabolo.achat",
+        "fields": {
+            "article": 2,
+            "asso": [
+                "Picasso"
+            ],
+            "tva": "0.07",
+            "pos": 1,
+            "seller": [
+                "root"
+            ]
+        }
+    },
+    {
+        "pk": 3,
+        "model": "diabolo.achat",
+        "fields": {
+            "article": 2,
+            "asso": [
+                "Picasso"
+            ],
+            "tva": "0.07",
+            "pos": 1,
+            "seller": [
+                "root"
+            ]
+        }
+    },
+    {
+        "pk": 1,
+        "model": "diabolo.transaction",
+        "fields": {
+            "date": "2012-06-18T15:54:11Z",
+            "amount": 100,
+            "user": [
+                "trecouvr"
+            ],
+            "description": "coucou"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "diabolo.transaction",
+        "fields": {
+            "date": "2012-06-18T16:04:01Z",
+            "amount": 170,
+            "user": [
+                "trecouvr"
+            ],
+            "description": "coucou2 les poulets"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "diabolo.transaction",
+        "fields": {
+            "date": "2012-06-18T16:07:04Z",
+            "amount": 170,
+            "user": [
+                "trecouvr"
+            ],
+            "description": "coucou2 les poulets"
+        }
+    }]

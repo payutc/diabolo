@@ -7,6 +7,8 @@ from tastypie.http import HttpUnauthorized
 from tastypie.utils import is_valid_jsonp_callback_value, dict_strip_unicode_keys, trailing_slash
 from tastypie.validation import Validation
 
+from guardian.shortcuts import *
+
 from django.conf.urls.defaults import url
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate,login,logout
@@ -36,6 +38,9 @@ class MyAuthentication(Authentication):
 	def authenticate(self, request):
 		user = authenticate(**self.credentials)
 		return user
+
+	def post_authenticate(self, request, user):
+		pass
 	
 	def post_login(self, request, user):
 		pass
@@ -85,6 +90,13 @@ class MyAuthentication(Authentication):
 			print "no user"
 			return self._unauthorized
 		
+		# post authenticate
+		try:
+			self.post_authenticate(request,user)
+		except Exception as ex:
+			print ex
+			return self._unauthorized()
+		
 		# login
 		login(request, user)
 		# post login
@@ -119,50 +131,69 @@ class PosAuthentication(MyAuthentication):
 
 		if not self.pos.check_seller_pass:
 			self.credentials['password'] = False
-
+	
+	def post_authenticate(self, request, user):
+		if not self.asso.user_is_seller(user):
+			raise Exception('user is not a seller of this association')
+		
 	def post_login(self, request, user):
 		request.session['pos'] = self.pos
 		request.session['asso'] = self.asso
 
+class AchatAuthorization(Authorization):
+	def extract_permission_codes(self, request):
+		klass = self.resource_meta.object_class
+		
+		permission_map = {
+			'GET': ['%s.view_%s'],
+			'POST': ['%s.add_%s'],
+			'DELETE': ['%s.delete_%s'],
+			'PATCH': ['%s.add_%s'],
+		}
+		
+		if request.method not in permission_map:
+			return []
+		
+		permission_codes = []
+		for perm in permission_map[request.method]:
+			permission_codes.append(perm % (klass._meta.app_label, klass._meta.module_name))
 
-class TransactionAuthorization(Authorization):
+		return permission_codes
+
 	def is_authorized(self, request, object=None):
-		return True
+		# vérification qu'on a bien un user, un pos et une asso
+		if not (hasattr(request, 'user') and 'pos' in request.session and 'asso' in request.session):
+			return False
 
-	# Optional but useful for advanced limiting, such as per user.
-	def apply_limits(self, request, object_list):
 		# GET-style methods are always allowed.
 		if request.method in ('GET', 'OPTIONS', 'HEAD'):
+			print "GET", object
 			return True
-
+		
 		klass = self.resource_meta.object_class
 
 		# If it doesn't look like a model, we can't check permissions.
 		if not klass or not getattr(klass, '_meta', None):
-			print 'Does not look like a model, we can not check permissions'
-			return False
+			return True
 
-		permission_map = {
-			'POST': ['%s.add_%s'],
-			'PUT': ['%s.change_%s'],
-			'DELETE': ['%s.delete_%s'],
-			'PATCH': ['%s.add_%s', '%s.change_%s', '%s.delete_%s'],
-		}
-		permission_codes = []
 
+		permission_codes = self.extract_permission_codes(request)
 		# If we don't recognize the HTTP method, we don't know what
 		# permissions to check. Deny.
-		if request.method not in permission_map:
+		if not permission_codes:
 			return False
 
-		for perm in permission_map[request.method]:
-			permission_codes.append(perm % (klass._meta.app_label, klass._meta.module_name))
-
-		# User must be logged in to check permissions.
-		if not hasattr(request, 'user'):
+		if not request.user.has_perms(permission_codes, object):
+			print "Pas le droit", permission_codes, object
 			return False
 
-		return request.user.has_perms(permission_codes, object_list)
+		print "ok", permission_codes, object
+		return True
+	
+	def apply_limits(self, request, object_list):
+		permission_codes = self.extract_permission_codes(request)
+		return get_objects_for_group(request.session['asso'], permission_codes, object_list)
+
 
 class UserResource(ModelResource):
 	class Meta:
@@ -218,8 +249,6 @@ class POSResource(ModelResource):
 
 class AchatResource(ModelResource):
 	def hydrate(self, bundle):
-		print "HYDRATE"
-		print bundle.data
 		# get article
 		article = Article.objects.get(pk=bundle.data['article'])
 		# get buyer
@@ -249,7 +278,7 @@ class AchatResource(ModelResource):
 	
 	class Meta:
 		queryset = Achat.objects.select_related(depth=1).all()
-		authorization = Authorization()
+		authorization = AchatAuthorization()
 		authentication = MultiAuthentication(PosAuthentication(),UserAuthentication())
 
 class AssoResource(ModelResource):

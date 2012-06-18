@@ -6,6 +6,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
+from guardian.shortcuts import *
+
 
 def add_can_view_permission(sender, **kwargs):
 	for content_type in ContentType.objects.all():
@@ -22,6 +24,10 @@ post_syncdb.connect(add_can_view_permission)
 class Asso(Group):
 	class Meta:
 		proxy = True
+
+	def user_is_seller(self, user):
+		pk_groups = map(lambda g: g.id, user.groups.all())
+		return self.id in pk_groups
 
 class UserProfile(models.Model):
 	user = models.OneToOneField(User)
@@ -108,12 +114,26 @@ class Achat(Transaction):
 	pos = models.ForeignKey(PointOfSale, related_name="pos")
 	tva = models.DecimalField(max_digits=3, decimal_places=2)
 
+	def is_authorized(self):
+		# TODO checker
+		# seller dans asso
+		# article dans asso
+		# sans alcool ou buyer majeur
+		return True
+	
 	@property
 	def buyer(self):
 		return self.user
 	@buyer.setter
 	def buyer(self, value):
 		self.user = value
+
+	def save(self, *args, **kwargs):
+		if not self.is_authorized():
+			raise Exception("Achat non permis")
+		super(Achat, self).save(*args, **kwargs)
+		assign('view_achat', self.asso, self)
+		assign('delete_achat', self.asso, self)
 	
 	def __unicode__(self):
 		return "Achat(article=%s,seller=%s,buyer=%s,pos=%s,asso=%s,date=%s)" % (

@@ -1,65 +1,52 @@
 # -*- coding: utf-8 -*-
-from tastypie.authorization import Authorization
+from tastypie.authorization import Authorization,ReadOnlyAuthorization
 
 from guardian.shortcuts import *
+from guardian.core import ObjectPermissionChecker
 
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate,login,logout
 from diabolo.models import *
 
 
+class ArticleAuthorization(ReadOnlyAuthorization):
+	def is_authorized(self, request, object=None):
+		# vérification qu'on a bien un user, un pos et une asso
+		if not (hasattr(request, 'user') and 'pos' in request.session and 'asso' in request.session):
+			return False
+		return super(ArticleAuthorization, self).is_authorized(request, object)
+	
+	def apply_limits(self, request, object_list):
+		queryset = Article.apply_asso_view_limits(request.session['asso'], object_list)
+		# TODO filtrer par période d'ouverture
+		#queryset.filter(...)
+		return queryset
 
 class AchatAuthorization(Authorization):
-	def extract_permission_codes(self, request):
-		klass = self.resource_meta.object_class
-		
-		permission_map = {
-			'GET': ['%s.view_%s'],
-			'POST': ['%s.add_%s'],
-			'DELETE': ['%s.delete_%s'],
-			'PATCH': ['%s.add_%s'],
-		}
-		
-		if request.method not in permission_map:
-			return []
-		
-		permission_codes = []
-		for perm in permission_map[request.method]:
-			permission_codes.append(perm % (klass._meta.app_label, klass._meta.module_name))
-
-		return permission_codes
-
 	def is_authorized(self, request, object=None):
 		# vérification qu'on a bien un user, un pos et une asso
 		if not (hasattr(request, 'user') and 'pos' in request.session and 'asso' in request.session):
 			return False
 
 		# GET-style methods are always allowed.
-		if request.method in ('GET', 'OPTIONS', 'HEAD'):
+		# Note un filtre est appliqué ensuite dans apply_limits
+		if request.method == 'GET':
 			print "GET", object
 			return True
-		
-		klass = self.resource_meta.object_class
 
-		# If it doesn't look like a model, we can't check permissions.
-		if not klass or not getattr(klass, '_meta', None):
+		# toujours autoriser, le clean sera fait dans lors de l'hydratation
+		elif request.method == 'POST':
 			return True
 
+		# autoriser les patch pour les bulks insert, de même que post
+		# le clean se fera côté AchatResource
+		elif request.method == 'PACHT':
+			return True
 
-		permission_codes = self.extract_permission_codes(request)
-		# If we don't recognize the HTTP method, we don't know what
-		# permissions to check. Deny.
-		if not permission_codes:
-			return False
-
-		if not request.user.has_perms(permission_codes, object):
-			print "Pas le droit", permission_codes, object
-			return False
-
-		print "ok", permission_codes, object
-		return True
+		return False
 	
 	def apply_limits(self, request, object_list):
-		permission_codes = self.extract_permission_codes(request)
-		return get_objects_for_group(request.session['asso'], permission_codes, object_list)
+		print "apply_limits", object_list
+		queryset = Achat.apply_asso_view_limits(request.session['asso'], object_list)
+		return queryset
 

@@ -72,17 +72,13 @@ class ArticleResource(ModelResource):
 	class Meta:
 		queryset = Article.objects.all()
 		resource_name = 'article'
+		allowed_methods = ['get']
 		authentication = PosAuthentication()
-
-class POSResource(ModelResource):
-	class Meta:
-		queryset = PointOfSale.objects.all()
-		resource_name = 'pos'
-		authentication = PosAuthentication()
-
+		authorization = ArticleAuthorization()
 
 class AchatResource(ModelResource):
 	def hydrate(self, bundle):
+		print "HYDRATE"
 		# get article
 		article = Article.objects.get(pk=bundle.data['article'])
 		# get buyer
@@ -110,12 +106,55 @@ class AchatResource(ModelResource):
 		
 		return bundle
 	
+	def obj_update(self, bundle, request=None, skip_errors=False, **kwargs):
+		"""
+		Permet d'éviter l'édition d'un objet.
+		"""
+		raise Exception("interdit d'éditer un achat")
+	
+	def obj_delete(self, request=None, **kwargs):
+		"""
+		Surcharge de la méthode obj_delete à cause du patch, qui ne donne
+		aucun moyen de vérifier lors du premier is_authorized.
+		A voir pour le futur du côté de
+		request = convert_post_to_patch(request)
+		deserialized = self.deserialize(request, ...)
+		pour faire le test dans la classe AchatAuthorization
+		"""
+		obj = kwargs.pop('_obj', None)
+
+		if not hasattr(obj, 'delete'):
+			try:
+				obj = self.obj_get(request, **kwargs)
+			except ObjectDoesNotExist:
+				raise NotFound("A model instance matching the provided arguments could not be found.")
+
+		self.is_authorized(request, obj)
+		obj.delete()
+		
 	class Meta:
 		queryset = Achat.objects.select_related(depth=1).all()
 		authorization = AchatAuthorization()
-		authentication = MultiAuthentication(PosAuthentication(),UserAuthentication())
+		authentication = PosAuthentication()
 
 class AssoResource(ModelResource):
 	class Meta:
 		queryset = Asso.objects.all()
 		authentication = PosAuthentication()
+
+class PayboxResource(ModelResource):
+	def hydrate(self, bundle):
+		# TODO call paybox
+		# TODO remplir les champs
+		return bundle
+		
+	class Meta:
+		queryset = Paybox.objects.all()
+		allowed_methods = ['get', 'post']
+		authentication = UserAuthentication()
+
+class TransactionResource(ModelResource):
+	class Meta:
+		queryset = Transaction.objects.all()
+		allowed_methods = ['get']
+		authentication = UserAuthentication()

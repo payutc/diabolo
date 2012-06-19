@@ -5,6 +5,7 @@ from django.db.models.signals import post_save,post_syncdb
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 
 from guardian.shortcuts import *
 
@@ -29,7 +30,17 @@ class Asso(Group):
 		pk_groups = map(lambda g: g.id, user.groups.all())
 		return self.id in pk_groups
 
-class UserProfile(models.Model):
+class MyModel(models.Model):
+	removed = models.DateTimeField(null=True, default=None)
+
+	def delete(self, *args, **kwargs):
+		self.removed = timezone.now()
+		self.save()
+	
+	class Meta:
+		abstract = True
+
+class UserProfile(MyModel):
 	user = models.OneToOneField(User)
 	badge_id = models.CharField(max_length=50)
 	birthday = models.DateField(null=True)
@@ -42,13 +53,13 @@ class UserProfile(models.Model):
 		return "Profile : "+self.user.username
 
 
-class Groupe(models.Model):
+class Groupe(MyModel):
 	name = models.CharField(max_length=50)
 	
 	def __unicode__(self):
 		return self.name
 
-class Famille(models.Model):
+class Famille(MyModel):
 	name = models.CharField(max_length=50)
 	alcool = models.BooleanField()
 	
@@ -56,7 +67,7 @@ class Famille(models.Model):
 		return self.name
 
 
-class Article(models.Model):
+class Article(MyModel):
 	name = models.CharField(max_length=50)
 	famille = models.ForeignKey(Famille)
 	stockinitial = models.IntegerField(null=True)
@@ -64,11 +75,17 @@ class Article(models.Model):
 	enVente = models.BooleanField()
 	tva = models.DecimalField(default=0.0, max_digits=3, decimal_places=2)
 	prix_ttc = models.IntegerField()
+	assos = models.ManyToManyField(Asso)
+	
+	@staticmethod
+	def apply_asso_view_limits(asso, queryset):
+		return queryset.filter(assos__pk=asso.pk)
 
+	
 	def __unicode__(self):
 		return self.name
 		
-class PointOfSale(models.Model):
+class PointOfSale(MyModel):
 	name = models.CharField(max_length=50)
 	key = models.CharField(max_length=50,null=True)
 	check_seller_pass = models.BooleanField()
@@ -76,14 +93,14 @@ class PointOfSale(models.Model):
 	def __unicode__(self):
 		return self.name
 		
-class ArticlePos(models.Model):
+class ArticlePos(MyModel):
 	article = models.ForeignKey(Article, related_name="article")
 	position = models.IntegerField()
 	pos = models.ForeignKey(PointOfSale, related_name="pointdevente")
 	debut = models.TimeField()
 	fin = models.TimeField()
 
-class Reversement(models.Model):
+class Reversement(MyModel):
 	date = models.DateTimeField()
 	montant = models.IntegerField()
 	asso = models.ForeignKey(Asso)
@@ -93,7 +110,7 @@ class Reversement(models.Model):
 		return self.name
 
 
-class Transaction(models.Model):
+class Transaction(MyModel):
 	user = models.ForeignKey(User)
 	amount = models.IntegerField()
 	date = models.DateTimeField(auto_now_add=True)
@@ -127,13 +144,10 @@ class Achat(Transaction):
 	@buyer.setter
 	def buyer(self, value):
 		self.user = value
-
-	def save(self, *args, **kwargs):
-		if not self.is_authorized():
-			raise Exception("Achat non permis")
-		super(Achat, self).save(*args, **kwargs)
-		assign('view_achat', self.asso, self)
-		assign('delete_achat', self.asso, self)
+	
+	@staticmethod
+	def apply_asso_view_limits(asso, queryset):
+		return queryset.filter(asso__pk=asso.pk)
 	
 	def __unicode__(self):
 		return "Achat(article=%s,seller=%s,buyer=%s,pos=%s,asso=%s,date=%s)" % (
@@ -145,7 +159,6 @@ class Achat(Transaction):
 			self.date,
 		)
 
-		
 class Paybox(Transaction):
 	STATECHOICE = (
 		('W', 'Wait paybox'),
@@ -153,9 +166,9 @@ class Paybox(Transaction):
 		('S', 'Success')
 	)
 	state = models.CharField(max_length=1, choices=STATECHOICE)
-		
+
 class Virement(Transaction):
-	userfrom = models.OneToOneField(User, related_name="donneur")
+	userfrom = models.OneToOneField(User, related_name="userfrom")
 
 	@property
 	def userto(self):
@@ -171,3 +184,4 @@ class Virement(Transaction):
 			self.date,
 			self.amount
 		)
+

@@ -124,6 +124,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     #'south', # database migration
+    'django_evolution', # database migration
     'tastypie', # rest api
     'guardian', # acl
     'diabolo',

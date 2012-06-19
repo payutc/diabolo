@@ -40,7 +40,7 @@ class AchatAuthorization(Authorization):
 
 		# autoriser les patch pour les bulks insert, de même que post
 		# le clean se fera côté AchatResource
-		elif request.method == 'PACHT':
+		elif request.method == 'PATCH':
 			return True
 
 		return False

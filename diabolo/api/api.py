@@ -36,7 +36,7 @@ class UserResource(ModelResource):
 		#excludes = ['email', 'password', 'is_active', 'is_staff', 'is_superuser']
 		fields = ['username', 'first_name', 'last_name']
 		allowed_methods = ['get']
-		authentication = MultiAuthentication(PosAuthentication(),UserAuthentication())
+		authentication = MultiAuthentication(PosAuthentication(),UserAuthentication(),CasAuthentication())
 	
 	def prepend_urls(self):
 		return [

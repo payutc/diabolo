@@ -137,6 +137,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend', # this is default
     'diabolo.badgebackend.BadgeBackend',
     'guardian.backends.ObjectPermissionBackend',
+    'diabolo.casbackend.CasBackend'
 )
 ANONYMOUS_USER_ID = -1
 

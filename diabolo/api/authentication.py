@@ -106,6 +106,10 @@ class MyAuthentication(Authentication):
 class UserAuthentication(MyAuthentication):
 	def __init__(self):
 		super(UserAuthentication, self).__init__('user', (('username',True),('password',True)))
+		
+class CasAuthentication(MyAuthentication):
+	def __init__(self):
+		super(CasAuthentication, self).__init__('cas', (('ticket',True),('service',True)))
 	
 	
 class PosAuthentication(MyAuthentication):
